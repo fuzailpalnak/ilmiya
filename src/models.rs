@@ -37,17 +37,17 @@ pub struct ExamResponse {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct QuestionResponse {
     pub question: String,
-    pub options: Vec<String>,
-    pub correct_option: u32,
+    pub options: Vec<Options>,
     pub marks: u32,
     pub section: String,
     pub question_id: String,
+    pub exam_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Question {
     pub question: String,
-    pub options: Vec<String>,
+    pub options: Vec<Options>,
     pub correct_option: u32,
     pub marks: u32,
     pub section: String,
@@ -56,4 +56,11 @@ pub struct Question {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ExamId {
     pub exam_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Options {
+    pub id: String,
+    pub text: String,
+    pub is_correct: bool,
 }
