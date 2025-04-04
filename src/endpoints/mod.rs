@@ -1,0 +1,14 @@
+pub mod create;
+pub mod fetch;
+
+use actix_web::{web, Scope};
+
+pub fn exam_routes() -> Scope {
+    actix_web::web::scope("/exam")
+        .service(web::resource("/create").route(web::post().to(create::create_exam)))
+        .service(web::resource("/{exam_id}").route(web::get().to(fetch::fetch_exam)))
+}
+
+pub fn config_routes(cfg: &mut web::ServiceConfig) {
+    cfg.service(exam_routes());
+}
