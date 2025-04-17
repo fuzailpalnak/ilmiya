@@ -4,76 +4,43 @@ use crate::entities::{details, exam, options, questions, sections};
 use crate::errors::AppError;
 use crate::models;
 use actix_web::{web, HttpResponse};
-use log::info;
 
 use sea_orm::sea_query::JoinType;
-use sea_orm::sea_query::{Alias, IntoIden, SelectExpr, SelectStatement};
-use sea_orm::Iden;
 use sea_orm::QuerySelect;
 use sea_orm::RelationTrait;
-use sea_orm::{ColumnTrait, EntityTrait, QueryFilter, QueryTrait};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 
 use std::collections::HashMap;
 
-/// Prefixer utility to prefix selected column names from entities
-/// https://github.com/SeaQL/sea-orm/discussions/1502
-pub struct Prefixer<S: QueryTrait<QueryStatement = SelectStatement>> {
-    pub selector: S,
-}
-
-impl<S: QueryTrait<QueryStatement = SelectStatement>> Prefixer<S> {
-    pub fn new(selector: S) -> Self {
-        Self { selector }
-    }
-
-    pub fn add_columns<T: EntityTrait>(mut self, entity: T) -> Self {
-        for col in <T::Column as sea_orm::entity::Iterable>::iter() {
-            let alias = format!("{}{}", entity.table_name(), col.to_string(),);
-            info!("{}", alias);
-            self.selector.query().expr(SelectExpr {
-                expr: col.select_as(col.into_expr()),
-                alias: Some(Alias::new(&alias).into_iden()),
-                window: None,
-            });
-        }
-        self
-    }
-}
-
-/// Retrieves the details of an exam, including its sections, questions, options, and correct options.
-///
-/// This function retrieves the details of a specific exam by its `exam_id`. It first fetches the exam
-/// details, then concurrently fetches the associated sections, questions, options, and correct options
-/// using async queries. After gathering all the necessary data, it maps them into their respective models
-/// and returns them as a JSON response.
+/// Runs the query to retrieve the exam details along with associated sections, questions, options, and correct options.
+/// This function interacts with the database and returns the raw data.
 ///
 /// # Arguments
-///
 /// * `db_client` - A reference to the database client to interact with the database.
 /// * `exam_id` - The ID of the exam to be fetched.
 ///
 /// # Returns
-///
-/// Returns an `HttpResponse` containing the exam data if successful. If any error occurs,
-/// it returns an `AppError`.
+/// * `Result<Vec<models::QueryResponse>, AppError>` - A result containing the query response data or an error if the operation fails.
 ///
 /// # Example
-///
 /// ```rust
-/// let result = retrive(&db_client, 1).await;
+/// let result = fetch_exam_details(&db_client, 1).await;
 /// match result {
-///     Ok(response) => println!("Exam details: {:?}", response),
-///     Err(e) => println!("Error fetching exam: {}", e),
+///     Ok(response) => println!("Fetched exam details: {:?}", response),
+///     Err(e) => println!("Error fetching exam details: {}", e),
 /// }
 /// ```
-async fn retrive(db_client: &db::DbClient, exam_id: i32) -> Result<HttpResponse, AppError> {
-    let db = &db_client.db; // Directly borrow db reference
+async fn fetch_exam_query(
+    db_client: &db::DbClient,
+    exam_id: i32,
+) -> Result<Vec<models::QueryResponse>, AppError> {
+    let db_conn = &db_client.db;
 
     let select = exam::Entity::find()
         .filter(exam::Column::Id.eq(exam_id))
-        .select_only(); // Select only the specified columns (avoids selecting everything)
+        .select_only(); // Select only the specified columns
 
-    let result = Prefixer::new(select)
+    let result = db::Prefixer::new(select)
         .add_columns(exam::Entity)
         .add_columns(details::Entity)
         .add_columns(sections::Entity)
@@ -85,10 +52,35 @@ async fn retrive(db_client: &db::DbClient, exam_id: i32) -> Result<HttpResponse,
         .join(JoinType::Join, sections::Relation::Questions.def())
         .join(JoinType::Join, questions::Relation::Options.def())
         .into_model::<models::QueryResponse>()
-        .all(db)
+        .all(db_conn)
         .await?;
 
-    Ok(HttpResponse::Ok().json(generate_final_response(result)))
+    Ok(result)
+}
+
+/// Retrieves the details of a specific exam by calling the query function and returning the data in a JSON response.
+/// It processes the query result and returns it as an HTTP response.
+///
+/// # Arguments
+/// * `db_client` - A reference to the database client to interact with the database.
+/// * `exam_id` - The ID of the exam to be fetched.
+///
+/// # Returns
+/// * `HttpResponse` - An HTTP response containing the exam data in JSON format.
+///
+/// # Example
+/// ```rust
+/// let result = retrive(&db_client, 1).await;
+/// match result {
+///     Ok(response) => println!("Exam details: {:?}", response),
+///     Err(e) => println!("Error fetching exam: {}", e),
+/// }
+/// ```
+async fn retrive(db_client: &db::DbClient, exam_id: i32) -> Result<HttpResponse, AppError> {
+    match fetch_exam_query(db_client, exam_id).await {
+        Ok(result) => Ok(HttpResponse::Ok().json(generate_final_response(result))),
+        Err(e) => Err(e),
+    }
 }
 
 /// Transforms a vector of `Response` objects into a structured `Exam1` format.
@@ -161,7 +153,7 @@ fn generate_final_response(responses: Vec<models::QueryResponse>) -> models::Exa
 
         // Collect options
         let option = response.option;
-        options.push(models::Option {
+        options.push(models::OptionModel {
             id: option.id,
             question_id: option.question_id,
             text: option.text.clone(),

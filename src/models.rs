@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::db;
 use crate::entities::{details, options, questions, sections};
 use sea_orm::EntityTrait;
@@ -33,7 +35,7 @@ pub struct Question {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Option {
+pub struct OptionModel {
     pub id: i32,
     pub question_id: i32,
     pub text: String,
@@ -50,7 +52,31 @@ pub struct Exam {
     pub exam_description: ExamDescription,
     pub sections: Vec<Section>,
     pub questions: Vec<Question>,
-    pub options: Vec<Option>,
+    pub options: Vec<OptionModel>,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Delete {
+    pub section_ids: Vec<i32>,
+    pub question_ids: Vec<i32>,
+    pub option_ids: Vec<i32>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct EditExam {
+    pub exam_id: ExamId,
+    pub exam_description: ExamDescription,
+    pub sections: Vec<Section>,
+    pub questions: Vec<Question>,
+    pub options: Vec<OptionModel>,
+    pub delete: Delete,
+}
+
+#[derive(Debug)]
+pub struct DeletionData {
+    pub section_id_to_delete: HashSet<i32>,
+    pub question_id_to_delete: HashSet<i32>,
+    pub option_id_to_delete: HashSet<i32>,
+    pub section_question_option_map: Vec<(i32, i32, i32)>,
 }
 
 #[derive(Debug)]
@@ -81,4 +107,51 @@ pub fn parse_query_to_model<M: FromQueryResult, E: EntityTrait>(
     res: &sea_orm::QueryResult,
 ) -> Result<M, sea_orm::DbErr> {
     M::from_query_result(res, E::default().table_name())
+}
+
+impl Delete {
+    pub fn is_all_empty(&self) -> bool {
+        self.section_ids.is_empty() && self.question_ids.is_empty() && self.option_ids.is_empty()
+    }
+}
+
+impl EditExam {
+    pub fn is_section_empty(&self) -> bool {
+        self.sections.is_empty()
+    }
+    pub fn is_question_empty(&self) -> bool {
+        self.questions.is_empty()
+    }
+    pub fn is_option_empty(&self) -> bool {
+        self.options.is_empty()
+    }
+}
+
+impl DeletionData {
+    pub fn new(
+        section_id_to_delete: Vec<i32>,
+        question_id_to_delete: Vec<i32>,
+        option_id_to_delete: Vec<i32>,
+        section_question_option_map: Vec<(i32, i32, i32)>,
+    ) -> Self {
+        Self {
+            section_id_to_delete: section_id_to_delete.into_iter().collect(),
+            question_id_to_delete: question_id_to_delete.into_iter().collect(),
+            option_id_to_delete: option_id_to_delete.into_iter().collect(),
+            section_question_option_map,
+        }
+    }
+
+    pub fn filter_deletions(&mut self) {
+        for (section_id, question_id, option_id) in &self.section_question_option_map {
+            if self.section_id_to_delete.contains(section_id) {
+                if !self.question_id_to_delete.contains(question_id) {
+                    self.question_id_to_delete.insert(*question_id);
+                }
+                if !self.option_id_to_delete.contains(option_id) {
+                    self.option_id_to_delete.insert(*option_id);
+                }
+            }
+        }
+    }
 }

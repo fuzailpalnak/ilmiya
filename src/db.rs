@@ -1,6 +1,50 @@
 use crate::{errors::AppError, utils};
 use log::info;
+use sea_orm::sea_query::{Alias, IntoIden, SelectExpr, SelectStatement};
+use sea_orm::Iden;
+use sea_orm::{ColumnTrait, EntityTrait, QueryTrait};
 use sea_orm::{Database, DatabaseConnection};
+
+/// Prefixer utility to prefix selected column names from entities
+/// https://github.com/SeaQL/sea-orm/discussions/1502
+pub struct Prefixer<S: QueryTrait<QueryStatement = SelectStatement>> {
+    pub selector: S,
+}
+
+impl<S: QueryTrait<QueryStatement = SelectStatement>> Prefixer<S> {
+    pub fn new(selector: S) -> Self {
+        Self { selector }
+    }
+    pub fn add_columns<T: EntityTrait>(self, entity: T) -> Self
+    where
+        T::Column: Copy + sea_orm::entity::Iterable,
+    {
+        let columns: Vec<T::Column> = <T::Column as sea_orm::entity::Iterable>::iter().collect();
+        self.add_columns_inner(entity, &columns)
+    }
+
+    pub fn add_columns_from_list<T: EntityTrait>(self, entity: T, columns: &[T::Column]) -> Self
+    where
+        T::Column: Copy,
+    {
+        self.add_columns_inner(entity, columns)
+    }
+
+    fn add_columns_inner<T: EntityTrait>(mut self, entity: T, columns: &[T::Column]) -> Self
+    where
+        T::Column: Copy,
+    {
+        for &col in columns {
+            let alias = format!("{}{}", entity.table_name(), col.to_string());
+            self.selector.query().expr(SelectExpr {
+                expr: col.select_as(col.into_expr()),
+                alias: Some(Alias::new(&alias).into_iden()),
+                window: None,
+            });
+        }
+        self
+    }
+}
 
 /// A struct representing the database client connection.
 ///

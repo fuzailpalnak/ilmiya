@@ -1,8 +1,8 @@
 mod db;
-mod endpoints;
 mod entities;
 mod errors;
 mod models;
+mod routes;
 mod utils;
 
 use crate::errors::AppError;
@@ -21,7 +21,7 @@ async fn main() -> Result<(), AppError> {
         App::new()
             .app_data(app_state.clone())
             .wrap(Logger::default())
-            .configure(endpoints::config_routes)
+            .configure(routes::config_routes)
     })
     .bind("0.0.0.0:8080")?
     .workers(4)
