@@ -115,18 +115,6 @@ impl Delete {
     }
 }
 
-impl EditExam {
-    pub fn is_section_empty(&self) -> bool {
-        self.sections.is_empty()
-    }
-    pub fn is_question_empty(&self) -> bool {
-        self.questions.is_empty()
-    }
-    pub fn is_option_empty(&self) -> bool {
-        self.options.is_empty()
-    }
-}
-
 impl DeletionData {
     pub fn new(
         section_id_to_delete: Vec<i32>,
