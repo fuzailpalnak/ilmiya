@@ -1,50 +1,7 @@
-use crate::{errors::AppError, utils};
+use crate::utils;
+use anyhow::{Context, Result};
 use log::info;
-use sea_orm::sea_query::{Alias, IntoIden, SelectExpr, SelectStatement};
-use sea_orm::Iden;
-use sea_orm::{ColumnTrait, EntityTrait, QueryTrait};
-use sea_orm::{Database, DatabaseConnection};
-
-/// Prefixer utility to prefix selected column names from entities
-/// https://github.com/SeaQL/sea-orm/discussions/1502
-pub struct Prefixer<S: QueryTrait<QueryStatement = SelectStatement>> {
-    pub selector: S,
-}
-
-impl<S: QueryTrait<QueryStatement = SelectStatement>> Prefixer<S> {
-    pub fn new(selector: S) -> Self {
-        Self { selector }
-    }
-    pub fn add_columns<T: EntityTrait>(self, entity: T) -> Self
-    where
-        T::Column: Copy + sea_orm::entity::Iterable,
-    {
-        let columns: Vec<T::Column> = <T::Column as sea_orm::entity::Iterable>::iter().collect();
-        self.add_columns_inner(entity, &columns)
-    }
-
-    pub fn add_columns_from_list<T: EntityTrait>(self, entity: T, columns: &[T::Column]) -> Self
-    where
-        T::Column: Copy,
-    {
-        self.add_columns_inner(entity, columns)
-    }
-
-    fn add_columns_inner<T: EntityTrait>(mut self, entity: T, columns: &[T::Column]) -> Self
-    where
-        T::Column: Copy,
-    {
-        for &col in columns {
-            let alias = format!("{}{}", entity.table_name(), col.to_string());
-            self.selector.query().expr(SelectExpr {
-                expr: col.select_as(col.into_expr()),
-                alias: Some(Alias::new(&alias).into_iden()),
-                window: None,
-            });
-        }
-        self
-    }
-}
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 /// A struct representing the database client connection.
 ///
@@ -62,7 +19,7 @@ impl<S: QueryTrait<QueryStatement = SelectStatement>> Prefixer<S> {
 /// ```
 #[derive(Clone)]
 pub struct DbClient {
-    pub db: DatabaseConnection,
+    pub pool: Pool<Postgres>,
 }
 
 impl DbClient {
@@ -83,12 +40,17 @@ impl DbClient {
     /// ```rust
     /// let db_client = DbClient::new().await?;
     /// ```
-    pub async fn new() -> Result<Self, AppError> {
-        let db_url = utils::env::load_env_var("DATABASE_URL")?; // Load database URL from env variable
-        let db = Database::connect(&db_url)
+    pub async fn new() -> Result<Self> {
+        let db_url = utils::env::load_env_var("DATABASE_URL")
+            .context("Failed to load DATABASE_URL environment variable")?; // Load database URL from env variable
+
+        let pool = PgPoolOptions::new()
+            .max_connections(5)
+            .connect(&db_url)
             .await
-            .map_err(|err| AppError::DbErr(err))?; // Attempt to connect to the database
+            .context("Failed to connect to the PostgreSQL database")?;
+
         info!("Successfully Connected to DB"); // Log the success message
-        Ok(DbClient { db }) // Return the DbClient with the connection
+        Ok(DbClient { pool }) // Return the DbClient with the connection
     }
 }

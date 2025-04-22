@@ -1,21 +1,22 @@
+mod database;
 mod db;
-mod entities;
-mod errors;
-mod models;
+mod model;
 mod routes;
 mod utils;
 
-use crate::errors::AppError;
-
 use actix_web::{middleware::Logger, web, App, HttpServer};
+use anyhow::Result;
+use log::info;
 
 #[actix_web::main]
-async fn main() -> Result<(), AppError> {
+async fn main() -> Result<()> {
     std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
 
     let db_client = db::DbClient::new().await?;
-    let app_state = web::Data::new(models::AppState { db_client });
+    info!("Database client initialized.");
+
+    let app_state = web::Data::new(model::state::AppState { db_client });
 
     HttpServer::new(move || {
         App::new()
