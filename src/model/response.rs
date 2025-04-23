@@ -37,35 +37,35 @@ pub struct ExamIdResponse {
     pub id: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct SectionResponse {
     #[serde(flatten)]
     pub base: schema::SectionsModel,
     pub questions: Vec<QuestionResponse>,
 }
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, FromRow)]
 pub struct QuestionResponse {
     #[serde(flatten)]
     pub base: schema::QuestionsModel,
     pub options: Vec<OptionResponseModel>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct OptionResponseModel {
     #[serde(flatten)]
     pub base: schema::OptionsModel,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub struct ExamIdResponseModel {
     #[serde(flatten)]
     pub base: schema::ExamModel,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Debug)]
 pub struct ExamResponse {
     pub exam_id: ExamIdResponse,
-    pub exam_description: ExamDescription,
+    pub description: ExamDescription,
     pub sections: Vec<SectionResponse>,
 }

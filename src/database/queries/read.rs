@@ -150,7 +150,7 @@ pub async fn read_exam_data(pool: &sqlx::PgPool, exam_id: i32) -> Result<ExamRes
 
     Ok(ExamResponse {
         exam_id: exam_model.into(),
-        exam_description: exam_description.into(),
+        description: exam_description.into(),
         sections,
     })
 }
