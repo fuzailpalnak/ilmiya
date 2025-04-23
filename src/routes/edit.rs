@@ -6,7 +6,7 @@ pub async fn delete(
     db_client: &db::DbClient,
     exam: &model::request::EditExamRequest,
 ) -> Result<HttpResponse> {
-    queries::delete::delete_section_question_option_based_on_ids(&db_client.pool, &exam.delete)
+    queries::delete::delete_related_entities(&db_client.pool, &exam.delete)
         .await
         .context("Failed to delete sections/questions/options")?;
 

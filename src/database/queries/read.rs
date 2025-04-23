@@ -5,6 +5,18 @@ use anyhow::{Context, Result};
 
 use crate::utils::parse;
 
+/// Fetches an exam by its ID from the `exam` table.
+///
+/// # Arguments
+///
+/// * `pool` - A reference to the SQLx connection pool.
+/// * `exam_id` - The ID of the exam to retrieve.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// let exam = fetch_exam_id(&pool, 1).await?;
+/// println!("Exam ID: {}", exam.id);
+/// ```
 async fn fetch_exam_id(pool: &sqlx::PgPool, exam_id: i32) -> Result<schema::ExamModel> {
     sqlx::query_as!(
         schema::ExamModel,
@@ -20,6 +32,18 @@ async fn fetch_exam_id(pool: &sqlx::PgPool, exam_id: i32) -> Result<schema::Exam
     .context("Failed to fetch exam id")
 }
 
+/// Fetches the description of an exam from the `details` table.
+///
+/// # Arguments
+///
+/// * `pool` - A reference to the SQLx connection pool.
+/// * `exam_id` - The ID of the exam to get details for.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// let description = fetch_exam_description(&pool, 1).await?;
+/// println!("Title: {}", description.title);
+/// ```
 async fn fetch_exam_description(
     pool: &sqlx::PgPool,
     exam_id: i32,
@@ -44,6 +68,21 @@ async fn fetch_exam_description(
     .context("Failed to fetch exam description")
 }
 
+/// Fetches all sections, questions, and options related to an exam ID.
+/// This joins the `exam`, `details`, `sections`, `questions`, and `options` tables.
+///
+/// # Arguments
+///
+/// * `pool` - A reference to the SQLx connection pool.
+/// * `exam_id` - The ID of the exam to retrieve content for.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// let sections = fetch_sections_and_questions(&pool, 1).await?;
+/// for row in &sections {
+///     println!("Section: {}", row.section_title);
+/// }
+/// ```
 async fn fetch_sections_and_questions(
     pool: &sqlx::PgPool,
     exam_id: i32,
@@ -76,6 +115,32 @@ async fn fetch_sections_and_questions(
     .context("Failed to fetch sections and questions")
 }
 
+/// Reads the full data for a given exam, including basic info, description,
+/// and all related sections with questions and options.
+///
+/// This aggregates all parts of the exam into a single `ExamResponse`
+/// object, fetching from multiple tables and parsing the results.
+///
+/// # Arguments
+///
+/// * `pool` - The SQLx database connection pool.
+/// * `exam_id` - The ID of the exam to retrieve.
+///
+/// # Returns
+///
+/// An `ExamResponse` with the full hierarchical exam data.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// let response = read_exam_data(&pool, 1).await?;
+/// println!("Exam ID: {:?}", response.exam_id);
+/// for section in response.sections {
+///     println!("Section: {}", section.base.title);
+///     for question in section.questions {
+///         println!("Question: {}", question.base.text);
+///     }
+/// }
+/// ```
 pub async fn read_exam_data(pool: &sqlx::PgPool, exam_id: i32) -> Result<ExamResponse> {
     let exam_model = fetch_exam_id(pool, exam_id).await?;
     let exam_description = fetch_exam_description(pool, exam_id).await?;

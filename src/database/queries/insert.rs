@@ -2,6 +2,18 @@ use crate::model::request;
 use anyhow::{Context, Result};
 use sqlx::PgConnection;
 
+/// Inserts a new exam entry into the database.
+///
+/// # Arguments
+///
+/// * `tx` - Mutable database transaction.
+/// * `req` - Exam request containing the ID to insert.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// let mut tx = pool.begin().await?;
+/// let exam_id = insert_exam_id(&mut tx, &exam_request).await?;
+/// ```
 async fn insert_exam_id(tx: &mut PgConnection, req: &request::ExamRequest) -> Result<i32> {
     let result = sqlx::query!(
         r#"INSERT INTO exam (id, created_at, updated_at) VALUES ($1, DEFAULT, DEFAULT) RETURNING id"#,
@@ -14,6 +26,13 @@ async fn insert_exam_id(tx: &mut PgConnection, req: &request::ExamRequest) -> Re
     Ok(result.id)
 }
 
+/// Inserts exam details into the database.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// let mut tx = pool.begin().await?;
+/// let detail_id = insert_details(&mut tx, &exam_request).await?;
+/// ```
 async fn insert_details(tx: &mut PgConnection, req: &request::ExamRequest) -> Result<i32> {
     let result = sqlx::query!(
         r#"
@@ -35,6 +54,12 @@ async fn insert_details(tx: &mut PgConnection, req: &request::ExamRequest) -> Re
     Ok(result.id)
 }
 
+/// Inserts multiple sections for an exam.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// insert_sections(&mut tx, &[1, 2], &[10, 10], &["Math".into(), "Science".into()]).await?;
+/// ```
 async fn insert_sections(
     tx: &mut PgConnection,
     section_ids: &[i32],
@@ -58,6 +83,12 @@ async fn insert_sections(
     Ok(())
 }
 
+/// Inserts multiple questions into sections.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// insert_questions(&mut tx, &[1, 2], &[10, 10], &["Q1".into(), "Q2".into()], &["D1".into(), "D2".into()], &[5, 10]).await?;
+/// ```
 async fn insert_questions(
     tx: &mut PgConnection,
     question_ids: &[i32],
@@ -85,6 +116,12 @@ async fn insert_questions(
     Ok(())
 }
 
+/// Inserts multiple options for questions.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// insert_options(&mut tx, &[1, 2], &[10, 10], &["A".into(), "B".into()], &[true, false]).await?;
+/// ```
 async fn insert_options(
     tx: &mut PgConnection,
     option_ids: &[i32],
@@ -110,6 +147,18 @@ async fn insert_options(
     Ok(())
 }
 
+/// Inserts a full exam (exam metadata, details, sections, questions, and options).
+///
+/// This function handles the entire transaction lifecycle and ensures all parts of an exam are inserted atomically.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// let exam_request = ExamRequest { ... };
+/// insert_exam(&pool, &exam_request).await?;
+/// ```
+///
+/// # Errors
+/// Returns an error if any part of the insert process fails.
 pub async fn insert_exam(pool: &sqlx::PgPool, exam: &request::ExamRequest) -> Result<()> {
     let mut tx = pool
         .begin()

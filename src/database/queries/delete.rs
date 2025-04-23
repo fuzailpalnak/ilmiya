@@ -1,7 +1,27 @@
 use crate::model;
 use anyhow::{Context, Result};
 
-/// Function to delete an exam and automatically cascade delete related data.
+/// Deletes an exam and all related data (via cascading or manual deletion depending on schema).
+///
+/// This function starts a database transaction and deletes the exam record
+/// from the `exam` table. If foreign key constraints are set up with `ON DELETE CASCADE`,
+/// related rows in `details`, `sections`, `questions`, and `options` will be deleted automatically.
+///
+/// # Arguments
+///
+/// * `pool` - A reference to the SQLx PostgreSQL connection pool.
+/// * `exam_id` - The ID of the exam to delete.
+///
+/// # Errors
+///
+/// Returns an error if the transaction fails to begin, if the deletion fails,
+/// or if the transaction fails to commit.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// delete_exam(&pool, 1).await?;
+/// println!("Exam deleted successfully.");
+/// ```
 pub async fn delete_exam(pool: &sqlx::PgPool, exam_id: i32) -> Result<()> {
     let mut tx = pool.begin().await.context("Failed to begin transaction")?;
 
@@ -21,7 +41,36 @@ pub async fn delete_exam(pool: &sqlx::PgPool, exam_id: i32) -> Result<()> {
     Ok(())
 }
 
-pub async fn delete_section_question_option_based_on_ids(
+/// Deletes specific sections, questions, and options from the database.
+///
+/// This function allows you to manually delete related entities from their respective
+/// tables (`sections`, `questions`, and `options`) in a single transaction.
+/// The deletions are performed in the order: `sections`, `questions`, then `options`.
+///
+/// **Note:** Ensure the provided IDs are valid and correspond to existing entities.
+///
+/// # Arguments
+///
+/// * `pool` - A reference to the SQLx PostgreSQL connection pool.
+/// * `deletion_data` - A `DeleteIdsRequest` containing vectors of IDs for
+///   sections, questions, and options to delete.
+///
+/// # Errors
+///
+/// Returns an error if the transaction fails to begin, if any deletion query fails,
+/// or if the transaction fails to commit.
+///
+/// # Example (non-runnable)
+/// ```ignore
+/// let deletion_data = DeleteIdsRequest {
+///     section_ids: vec![1, 2],
+///     question_ids: vec![10, 11],
+///     option_ids: vec![100, 101],
+/// };
+/// delete_related_entities(&pool, &deletion_data).await?;
+/// println!("Related entities deleted successfully.");
+/// ```
+pub async fn delete_related_entities(
     pool: &sqlx::PgPool,
     deletion_data: &model::request::DeleteIdsRequest,
 ) -> Result<()> {
