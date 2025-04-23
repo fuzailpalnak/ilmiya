@@ -13,5 +13,5 @@ pub async fn create_exam(
             actix_web::error::ErrorInternalServerError("Internal server error")
         })?;
 
-    Ok(HttpResponse::Created().json(req_body.exam_id.base.id))
+    Ok(HttpResponse::Ok().json(req_body.exam_id.base.id))
 }

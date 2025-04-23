@@ -4,6 +4,8 @@ mod model;
 mod routes;
 mod utils;
 
+use actix_cors::Cors;
+use actix_web::http::header;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use anyhow::Result;
 use log::info;
@@ -22,9 +24,16 @@ async fn main() -> Result<()> {
         App::new()
             .app_data(app_state.clone())
             .wrap(Logger::default())
+            .wrap(
+                Cors::default()
+                    .allowed_origin("http://localhost:8080")
+                    .allowed_methods(vec!["GET", "POST", "OPTIONS"])
+                    .allowed_headers(vec![header::CONTENT_TYPE])
+                    .supports_credentials(),
+            )
             .configure(routes::config_routes)
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:8000")?
     .workers(4)
     .run()
     .await?;
