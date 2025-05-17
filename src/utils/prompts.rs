@@ -1,6 +1,6 @@
 
 
-pub fn arabic_prompt_template_similar_fill_in_the_blank(question: &String, correct_answer: &String) -> String {
+pub fn arabic_prompt_template_context_fill_in_the_blank(question: &String, correct_answer: &String) -> String {
     format!(
                 r#"
             **المهمة (Kaam):** قم بإنشاء 4 خيارات متعددة باللغة العربية لسؤال ملء الفراغات أدناه. يجب أن تكون الخيارات مربكة للغاية وذات صلة بسياق الجملة المعطاة.
@@ -38,7 +38,7 @@ pub fn arabic_prompt_template_similar_fill_in_the_blank(question: &String, corre
     )
 }
 
-pub fn urdu_prompt_template_similar_fill_in_the_blank(question: &String, correct_answer: &String) -> String {
+pub fn urdu_prompt_template_context_fill_in_the_blank(question: &String, correct_answer: &String) -> String {
     format!(
             r#"
             **Kaam (Task):** Neechay diye gaye fill-in-the-blank sawal ke liye 4 multiple-choice options Roman Urdu mein banayein. Options bohat zyada confusing aur diye gaye jumlay ke context ke lihaz se relevant hone chahiye.

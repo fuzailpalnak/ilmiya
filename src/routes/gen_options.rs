@@ -7,8 +7,8 @@ use crate::utils;
 fn build_mcq_prompt(question: &String, correct_answer: &String, language: PromptLanguage) -> String {
 
     match language {
-        PromptLanguage::Arabic => utils::formatter::arabic_prompt_template_similar_fill_in_the_blank(question, correct_answer),
-        PromptLanguage::Urdu => utils::formatter::urdu_prompt_template_similar_fill_in_the_blank(question, correct_answer),
+        PromptLanguage::Arabic => utils::prompts::arabic_prompt_template_context_fill_in_the_blank(question, correct_answer),
+        PromptLanguage::Urdu => utils::prompts::urdu_prompt_template_context_fill_in_the_blank(question, correct_answer),
     }
 
 }

@@ -1,3 +1,3 @@
 pub mod env;
 pub mod parse;
-pub mod formatter;
+pub mod prompts;
