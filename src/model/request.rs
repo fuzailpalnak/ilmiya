@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use crate::database::schema;
 use serde::{Deserialize, Serialize};
 
@@ -62,3 +60,34 @@ impl DeleteIdsRequest {
         self.section_ids.is_empty() && self.question_ids.is_empty() && self.option_ids.is_empty()
     }
 }
+
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GuessFillInTheBlankTextGenerationRequest {
+    pub sentence: String,
+    pub num_of_options_to_generate: u32,
+    pub language: Language, 
+
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Language {
+    Arabic,
+    Urdu,
+}
+
+pub enum PromptLanguage {
+    Arabic,
+    Urdu,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SimilarFillInThBlankTextGenerationRequest {
+    pub question: String,
+    pub correct_answer: String,
+    pub language: Language, 
+}
+

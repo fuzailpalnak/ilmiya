@@ -69,3 +69,13 @@ pub struct ExamResponse {
     pub description: ExamDescription,
     pub sections: Vec<SectionResponse>,
 }
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct GuessFillInTheBlankResponse {
+    pub responses: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ResponseWrapper {
+    responses: Vec<String>,
+}

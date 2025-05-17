@@ -1,9 +1,9 @@
-use crate::{database::queries, db, model};
+use crate::{database::queries, conn, model};
 use actix_web::{web, HttpResponse};
 use anyhow::{Context, Result};
 
 pub async fn delete(
-    db_client: &db::DbClient,
+    db_client: &conn::DbClient,
     exam: &model::request::EditExamRequest,
 ) -> Result<HttpResponse> {
     queries::delete::delete_related_entities(&db_client.pool, &exam.delete)

@@ -1,7 +1,11 @@
 use crate::database::schema;
-use crate::model::response::{OptionResponseModel, QuestionResponse, SectionResponse};
-use anyhow::Result;
+use crate::model;
+use crate::model::request::PromptLanguage;
+use crate::model::response::{GuessFillInTheBlankResponse, OptionResponseModel, QuestionResponse, SectionResponse};
+use anyhow::{bail, Context, Result};
+use regex::Regex;
 use std::collections::HashMap;
+
 
 /// Maps the raw rows from the database query to structured `SectionResponse` objects.
 /// Returns a Result with either the mapped data or an error.
@@ -75,4 +79,35 @@ pub fn map_to_section_response(
 
     // Return the map of sections or an error if anything goes wrong
     Ok(sections_map)
+}
+
+pub fn map_to_prompt_language(language: &model::request::Language) -> PromptLanguage {
+    match language {
+        model::request::Language::Arabic => PromptLanguage::Arabic,
+        model::request::Language::Urdu => PromptLanguage::Urdu,
+    }
+}
+
+pub fn parse_similar_fill_in_the_blanks_options(json_text: &str) -> Result<GuessFillInTheBlankResponse> {
+// println!("Input: {:?}", json_text);
+
+        let mut clean_text = json_text.trim();
+
+    if clean_text.starts_with("```") {
+        clean_text = clean_text
+            .trim_start_matches("```json")
+            .trim_start_matches("```")
+            .trim_end_matches("```")
+            .trim();
+    }
+    let parsed: GuessFillInTheBlankResponse = serde_json::from_str(clean_text)?;
+
+    if parsed.responses.len() != 4 {
+        bail!(
+            "Expected exactly 4 options in 'options', found {}",
+            parsed.responses.len()
+        );
+    }
+
+    Ok(parsed)
 }
