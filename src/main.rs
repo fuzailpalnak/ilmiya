@@ -3,7 +3,7 @@ mod conn;
 mod model;
 mod routes;
 mod utils;
-mod handlers;
+mod services;
 
 use actix_cors::Cors;
 use actix_web::http::header;

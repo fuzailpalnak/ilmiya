@@ -2,8 +2,7 @@ use crate::database::schema;
 use crate::model;
 use crate::model::request::PromptLanguage;
 use crate::model::response::{GuessFillInTheBlankResponse, OptionResponseModel, QuestionResponse, SectionResponse};
-use anyhow::{bail, Context, Result};
-use regex::Regex;
+use anyhow::{bail, Result};
 use std::collections::HashMap;
 
 
@@ -89,7 +88,7 @@ pub fn map_to_prompt_language(language: &model::request::Language) -> PromptLang
 }
 
 pub fn parse_similar_fill_in_the_blanks_options(json_text: &str) -> Result<GuessFillInTheBlankResponse> {
-    // println!("Input: {:?}", json_text);
+    println!("Input: {:?}", json_text);
 
     let mut clean_text = json_text.trim();
 

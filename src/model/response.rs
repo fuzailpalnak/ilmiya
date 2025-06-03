@@ -79,3 +79,26 @@ pub struct GuessFillInTheBlankResponse {
 struct ResponseWrapper {
     responses: Vec<String>,
 }
+
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct LLMResponse {
+    pub candidates: Option<Vec<LLMOptionsResponse>>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct LLMOptionsResponse {
+    pub content: Option<LLMContentResponse>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct LLMContentResponse {
+    pub parts: Vec<LLMPartResponse>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct LLMPartResponse {
+    pub text: String,
+}
