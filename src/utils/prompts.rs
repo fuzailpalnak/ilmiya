@@ -1,158 +1,39 @@
+use serde::Deserialize;
+use std::fs;
+use once_cell::sync::Lazy;
+use std::env;
+
+#[derive(Deserialize, Debug)]
+pub struct PromptTemplates {
+    pub arabic_similar_fill: String,
+    pub arabic_context_fill: String,
+    pub urdu_context_fill: String,
+}
+
+pub static PROMPT_TEMPLATES: Lazy<PromptTemplates> = Lazy::new(|| {
+    dotenv::dotenv().ok();
+    let path = env::var("PROMPT_TEMPLATE_PATH")
+        .expect("PROMPT_TEMPLATE_PATH not set in .env file");
+
+    let file_content = fs::read_to_string(path).expect("Failed to read prompt template file");
+    serde_json::from_str(&file_content).expect("Failed to parse prompt template JSON")
+});
 
 
 pub fn arabic_prompt_template_similar_fill_in_the_blank(correct_answer: &String) -> String {
-
-format!(
-            r#"
-
-الكلمة الأصلية هي: {}
-
-المطلوب:
-إنشاء أربعة خيارات باللغة العربية. أحد هذه الخيارات يجب أن يكون الكلمة الأصلية نفسها. الخيارات الثلاثة الأخرى يجب أن تكون كلمات مربكة للغاية ومضللة ببراعة، مصممة خصيصًا لتحدي قدرة المستخدم على التمييز الدقيق والفروق اللغوية الدقيقة. يجب أن تبدو كل الخيارات، بما في ذلك المربكة، معقولة ومحتملة للوهلة الأولى، مما يجعل الاختيار يتطلب تركيزًا ومعرفة لغوية دقيقة.
-
-لتصميم الخيارات المربكة الثلاثة، يجب على النموذج الذكاء الاصطناعي أن يتبع استراتيجية "الخداع الذكي" من خلال:
-
-التنوع في آلية الإرباك: يجب أن تستغل الكلمات المربكة الثلاث آليات مختلفة لخلق الارتباك. لا تكرر نفس نوع الخطأ أو التشابه في جميع الخيارات المربكة. على سبيل المثال، إذا كان أحد الخيارات المربكة يعتمد على تغيير طفيف في التشكيل، فيجب أن يعتمد الآخر على اشتقاق صرفي مشابه ولكنه خاطئ، والثالث على كلمة ذات جذر مختلف ولكنها مشابهة جداً في الرسم الإملائي.
-
-الأولوية للفروق الدقيقة والصعبة:
-
-التشكيل الخادع (الحركات): هذا هو المجال الأكثر خصوبة للإرباك. يجب تغيير الحركات (فتحة، ضمة، كسرة، سكون، شدة، تنوين) بطريقة تنتج:
-
-كلمة موجودة فعلاً في اللغة ولكن بمعنى مختلف تمامًا أو قريب بشكل مضلل (مثل "عِلْمٌ" مقابل "عَلَمٌ").
-
-صيغة صرفية مختلفة للكلمة الأصلية (مثل اسم الفاعل مقابل اسم المفعول: "مُكْسِرٌ" مقابل "مُكَسَّرٌ").
-
-كلمة تبدو صحيحة لغوياً بسبب التشكيل ولكنها ليست الكلمة المطلوبة، أو أنها خطأ شائع في التشكيل.
-
-الاشتقاقات الصرفية المضللة (قواعد الصرف):
-
-إذا كانت الكلمة الأصلية كلمة عربية معرّفة، استخدم اشتقاقات صرفية أخرى تكون قريبة جداً في الرسم الإملائي أو الوزن الصرفي ولكنها ليست الكلمة المطلوبة.
-
-ركز على الفروق بين: اسم الفاعل واسم المفعول، المصادر المختلفة، أفعال من أبواب صرفية مختلفة تبدو متشابهة، صيغ المبالغة القريبة من اسم الفاعل، اسم الزمان/المكان مقابل المصدر الميمي، إلخ.
-
-مثال: إذا كانت الكلمة الأصلية "مُسْتَشْفَى" (اسم مكان)، يمكن أن يكون الخيار المربك "مُسْتَشْفِي" (اسم فاعل) أو "اسْتَشْفَى" (فعل ماضٍ).
-
-التشابه الإملائي الشديد مع تغيير دقيق:
-
-تبديل حرف بحرف آخر قريب جداً في المخرج أو الشكل (مثل: س/ص، ت/ط، د/ذ، ض/ظ، ء/ع/أ).
-
-إضافة أو حذف حرف واحد غير واضح بسهولة (مثل ألف فارقة، أو ياء في نهاية الكلمة).
-
-قلب مكاني طفيف للحروف (metathesis) إذا كان ينتج كلمة تبدو مألوفة.
-
-التباين في الحالات الإعرابية (قواعد النحو):
-
-إذا كانت الكلمة الأصلية معربة وتقبل تغيير الحركة الإعرابية في آخرها، يمكن استخدام نفس الكلمة بحركات إعرابية مختلفة كخيار مربك، خاصة إذا كانت الكلمة الأصلية مقدمة بحركة إعرابية محددة. هذا يمكن أن يكون خادعًا لأن الكلمة هي نفسها في جوهرها ولكنها غير صحيحة في سياق معين (إذا كان السياق ضمنياً هو حالة الرفع مثلاً).
-
-تجنب الخيارات الواضحة الخطأ أو الساذجة:
-
-يجب أن تكون الكلمات المربكة "ذكية"، أي أنها ليست مجرد تحريف عشوائي أو كلمة لا معنى لها بشكل واضح.
-
-إذا تم اختراع كلمة (لا معنى لها)، يجب أن تتبع الأوزان والقوالب الصرفية العربية بشكل مقنع للغاية وأن تكون شديدة الشبه بالكلمة الأصلية، بحيث تبدو وكأنها كلمة حقيقية نادرة أو مهجورة.
-
-لا ينبغي أن تكون الخيارات المربكة مشابهة لبعضها البعض أكثر من اللازم، بل يجب أن يقدم كل واحد منها تحديًا فريدًا.
-
-الهدف العام:
-الغاية هي إيجاد ثلاثة خيارات مربكة تستغل كل منها نقطة ضعف مختلفة في تمييز الكلمات العربية، بحيث يضطر المستخدم إلى التفكير مليًا في كل جوانب الكلمة (الرسم، اللفظ، التشكيل، الصرف، المعنى المحتمل) قبل اختيار الإجابة الصحيحة.
-
-مثال على الارتباك المقصود (لو كانت الكلمة الأصلية 'مُحْتَرِفٌ'):
-
-الخيارات المربكة المحتملة (يتم اختيار ثلاثة منها بآليات مختلفة):
-
-'مُحْتَرَفٌ' (تغيير كسرة الراء إلى فتحة، فيصبح اسم مفعول أو اسم مكان/زمان، بدلاً من اسم فاعل - إرباك بالتشكيل والصرف)
-
-'مُخْتَرِفٌ' (تبديل الحاء بالخاء، كلمة مشابهة جداً في الرسم ولكنها من جذر مختلف أو لا معنى لها - إرباك بالرسم الإملائي)
-
-'احْتَرَفَ' (الفعل الماضي من نفس الجذر، قد يخلط المستخدم بين الفعل والاسم المشتق - إرباك بالصرف واختلاف نوع الكلمة)
-
-'مُحْتَرِفًا' (الكلمة الأصلية في حالة النصب - إرباك بالحالة الإعرابية إذا لم يُحدد سياق)
-
-الإجابة النهائية يجب أن تكون قائمة من أربعة خيارات تتضمن 'مُحْتَرِفٌ' وثلاث من الكلمات المربكة التي تم اختيارها بعناية، بترتيب عشوائي.
-
-الرجاء تقديم الإجابة فقط بتنسيق JSON التالي، مع التأكد من أن ترتيب الخيارات عشوائي وأن أحدها هو الكلمة الأصلية، وأن الخيارات المربكة تم اختيارها بذكاء لتحقيق أقصى قدر من التحدي:
-
-{{\"responses\": [\"الخيار الأول كنص عربي\", \"الخيار الثاني كنص عربي\", \"الخيار الثالث كنص عربي\", \"الخيار الرابع كنص عربي\"]}}\
-
-
-لا تقم بتضمين أي نص آخر قبل أو بعد كائن JSON."#,
-        correct_answer.trim()
-    )
+    PROMPT_TEMPLATES.arabic_similar_fill.replace("{correct_answer}", correct_answer.trim())
 }
 
-
 pub fn arabic_prompt_template_context_fill_in_the_blank(question: &String, correct_answer: &String) -> String {
-    format!(
-                r#"
-            **المهمة (Kaam):** قم بإنشاء 4 خيارات متعددة باللغة العربية لسؤال ملء الفراغات أدناه. يجب أن تكون الخيارات مربكة للغاية وذات صلة بسياق الجملة المعطاة.
-            
-            **الجملة المعطاة (بالعربية):** [{}]
-            **الإجابة الصحيحة المعطاة (بالعربية):** [{}]
-            
-            **تعليمات إنشاء الخيارات:**
-            1.  قم بتضمين **الإجابة الصحيحة** كأحد الخيارات.
-            2.  يجب أن تكون الخيارات الثلاثة المتبقية **مشتتات عربية مربكة** عن قصد.
-            3.  يجب أن تكون المشتتات **من نفس فئة الإجابة الصحيحة** (مثلاً، إذا كانت الإجابة مدينة، فيجب أن تكون الخيارات الأخرى مدناً أيضاً؛ إذا كانت الإجابة فعلاً، فيجب أن تكون الخيارات الأخرى أفعالاً؛ إذا كانت صفة، فيجب أن تكون الخيارات الأخرى صفات، وهكذا).
-            4.  يجب أن تبدو المشتتات **معقولة (plausible) في سياق الجملة المعطاة**. أي، يجب أن تكون كلمات *يمكن أن تناسب الفراغ في تلك الجملة المحددة*، حتى لو جعلت المعنى خاطئاً. مجرد كونها من نفس الفئة ليس كافياً.
-            5.  يجب أن تسبب مجموعة الخيارات **ارتباكاً شديداً** للمتعلم.
-            6.  ضع **الإجابة الصحيحة** في موضع عشوائي ضمن الخيارات الأربعة.
-            
-            **تنسيق الإخراج المطلوب بشدة:**
-            *   يجب أن يكون الإخراج بتنسيق JSON بالهيكل التالي:
-                ```json
-                {{"responses": ["الخيار الأول كنص عربي", "الخيار الثاني كنص عربي", "الخيار الثالث كنص عربي", "الخيار الرابع كنص عربي"]}}
-                ```
-            *   يجب أن يحتوي مفتاح "responses" على مصفوفة (array) من أربعة سلاسل نصية (strings) بالضبط.
-            *   كل سلسلة نصية في المصفوفة يجب أن تكون أحد الخيارات (الكلمة أو العبارة العربية فقط).
-            *   **لا تقم** بتضمين أي بادئات مثل "أ)"، "ب)"، "ج)"، "د)" أو أي أرقام أو فواصل ضمن السلاسل النصية نفسها.
-            *   **لا تقم** بتضمين الجملة الأصلية، أو تأكيد الإجابة الصحيحة، أو أي نص أو جمل أو توضيحات أخرى خارج هيكل JSON المحدد. يجب أن يكون الرد هو كائن JSON فقط.
-            
-            **مثال على تنسيق الإخراج المطلوب (هذا الهيكل فقط، المحتوى مجرد مثال):**
-            ```json
-            {{"responses": ["تفاحة", "برتقالة", "موزة", "عنب"]}}
-            ```
-            
-            **الآن، بناءً على 'الجملة المعطاة' و 'الإجابة الصحيحة المعطاة' أعلاه، قم بإنشاء الخيارات مع الالتزام الصارم بتنسيق الإخراج.**
-            "#,
-        question.trim(),
-        correct_answer.trim()
-    )
+    PROMPT_TEMPLATES
+        .arabic_context_fill
+        .replace("{question}", question.trim())
+        .replace("{correct_answer}", correct_answer.trim())
 }
 
 pub fn urdu_prompt_template_context_fill_in_the_blank(question: &String, correct_answer: &String) -> String {
-    format!(
-            r#"
-            **Kaam (Task):** Neechay diye gaye fill-in-the-blank sawal ke liye 4 multiple-choice options Roman Urdu mein banayein. Options bohat zyada confusing aur diye gaye jumlay ke context ke lihaz se relevant hone chahiye.
-
-            **Diya Gaya Jumla (Roman Urdu):** [{}]
-            **Diya Gaya Sahi Jawab (Roman Urdu):** [{}]
-
-            **Options Banane Ki Hidayat:**
-            1.  **Sahi Jawab** ko ek option ke tor par shamil karein.
-            2.  Baaki 3 options jaan boojh kar **confuse karne wale Roman Urdu distractors** hone chahiye.
-            3.  Distractors **sahi jawab jaisi category ke hone chahiye** (maslan, agar jawab sheher hai to doosre options bhi sheher hon; agar jawab ek kaam/verb hai to doosre options bhi kaam/verb hon; agar sifat/adjective hai to baaqi bhi sifat/adjective hon, waghera).
-            4.  Distractors ko **diye gaye jumlay ke context mein munasib (plausible) lagna chahiye**. Yani aisay alfaz hon jo *us khaas jumlay ki khaali jagah mein fit ho sakte hon*, bhale hi woh ma'ni (meaning) ko ghalat kar dein. Sirf category same hona kafi nahin.
-            5.  Options ka majmua learner ke liye **shadeed confusion** paida kare.
-            6.  **Sahi jawab** ko options mein randomly shamil karein.
-
-            **NIHAYAT ZAROORI OUTPUT FORMAT:**
-            *   Output neeche diye gaye JSON format mein hona chahiye:
-                ```json
-                {{"responses": ["Pehla Roman Urdu option", "Doosra Roman Urdu option", "Teesra Roman Urdu option", "Chotha Roman Urdu option"]}}
-                ```
-            *   "responses" key mein theek char (4) Roman Urdu strings ki ek array honi chahiye.
-            *   Array mein har string sirf Roman Urdu option (lafz ya jumla) hona chahiye.
-            *   Strings ke andar "A)", "B)", "C)", "D)" jaisay prefixes ya koi number ya fawasil (separators) **NAHI** hone chahiye.
-            *   Diye gaye JSON structure ke bahar asal jumla, sahi jawab ki tasdeeq, ya koi aur text, jumlay, ya wazahat shamil **NA KAREIN**. Jawab sirf JSON object hona chahiye.
-
-            **Matlooba Output Format Ki Misaal (Sirf yeh structure, content sirf misaal hai):**
-            ```json
-            {{"responses": ["Kiya", "Kahan", "Kab", "Kaise"]}}
-            ```
-
-            **Ab upar diye gaye 'Diya Gaya Jumla' aur 'Diya Gaya Sahi Jawab' ki bunyad par, sakht output format ki pairwi karte hue, options banayein.**
-            "#,
-        question.trim(),
-        correct_answer.trim()
-    )
+    PROMPT_TEMPLATES
+        .urdu_context_fill
+        .replace("{question}", question.trim())
+        .replace("{correct_answer}", correct_answer.trim())
 }
-

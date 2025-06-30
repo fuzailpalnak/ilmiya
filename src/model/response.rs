@@ -75,12 +75,6 @@ pub struct GuessFillInTheBlankResponse {
     pub responses: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
-struct ResponseWrapper {
-    responses: Vec<String>,
-}
-
-
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct LLMResponse {

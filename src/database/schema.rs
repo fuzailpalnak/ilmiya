@@ -45,7 +45,6 @@ pub struct SectionsModel {
     pub title: String,
 }
 
-/// Struct representing a row returned from the database query
 #[derive(sqlx::FromRow)]
 pub struct SectionRow {
     pub section_id: i32,

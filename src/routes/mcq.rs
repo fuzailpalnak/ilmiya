@@ -11,7 +11,6 @@ pub fn build_contextual_mcq_prompt(question: &String, correct_answer: &String, l
     }
 }
 
-/// Builds an MCQ prompt for generating similar answers, for the specified language.
 pub fn build_similarity_mcq_prompt(correct_answer: &String, language: PromptLanguage) -> String {
     match language {
         PromptLanguage::Arabic => utils::prompts::arabic_prompt_template_similar_fill_in_the_blank(correct_answer),
