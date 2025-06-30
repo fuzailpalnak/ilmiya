@@ -88,8 +88,6 @@ pub fn map_to_prompt_language(language: &model::request::Language) -> PromptLang
 }
 
 pub fn parse_similar_fill_in_the_blanks_options(json_text: &str) -> Result<GuessFillInTheBlankResponse> {
-    println!("Input: {:?}", json_text);
-
     let mut clean_text = json_text.trim();
 
     if clean_text.starts_with("```") {
