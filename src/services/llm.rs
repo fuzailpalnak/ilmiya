@@ -24,8 +24,7 @@ pub async fn send_prompt_to_llm(
         .header("Content-Type", "application/json")
         .json(&request_body)
         .send()
-        .await
-        .context("Failed to send request to LLM API")?;
+        .await?;
 
     // Uncomment and configure logging as needed
     // log::debug!("LLM API response: {:?}", response);

@@ -82,7 +82,8 @@ pub struct ContextFillInThBlankTextGenerationRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct SimilarFillInThBlankTextGenerationRequest {
+pub struct QuranicVerseFillInThBlankTextGenerationRequest {
+    pub question: String,
     pub correct_answer: String,
 }
 

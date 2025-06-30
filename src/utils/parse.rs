@@ -101,9 +101,9 @@ pub fn parse_similar_fill_in_the_blanks_options(json_text: &str) -> Result<Guess
     }
     let parsed: GuessFillInTheBlankResponse = serde_json::from_str(clean_text)?;
 
-    if parsed.responses.len() != 4 {
+    if parsed.responses.len() < 4 {
         bail!(
-            "Expected exactly 4 options in 'options', found {}",
+            "Couldn't generate enough options. Expected at least 4, got {}",
             parsed.responses.len()
         );
     }
