@@ -17,7 +17,7 @@ pub async fn send_prompt_to_llm(
     n_guesses: u32,
 ) -> Result<String> {
     let client = Client::new();
-    let request_body = model::request::LLMRequest::new(prompt.to_owned(), n_guesses, 0.7);
+    let request_body = model::llm::LLMRequest::new(prompt.to_owned(), n_guesses, 0.7);
 
     let response = client
         .post(api_url)
@@ -41,7 +41,7 @@ pub async fn send_prompt_to_llm(
 
 /// Parses the LLM API JSON response and extracts the generated text.
 fn parse_llm_response_text(body: &str) -> Result<String> {
-    let api_response: model::response::LLMResponse =
+    let api_response: model::llm::LLMResponse =
         serde_json::from_str(body).context("Failed to parse LLM API JSON")?;
 
     api_response

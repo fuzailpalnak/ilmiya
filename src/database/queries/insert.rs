@@ -1,4 +1,4 @@
-use crate::model::request;
+use crate::model::exam;
 use anyhow::{Context, Result};
 use sqlx::PgConnection;
 
@@ -14,9 +14,9 @@ use sqlx::PgConnection;
 /// let mut tx = pool.begin().await?;
 /// let exam_id = insert_exam_id(&mut tx, &exam_request).await?;
 /// ```
-async fn insert_exam_id(tx: &mut PgConnection, req: &request::ExamRequest) -> Result<i32> {
+async fn insert_exam_id(tx: &mut PgConnection, req: &exam::ExamRequest) -> Result<i32> {
     let result = sqlx::query!(
-        r#"INSERT INTO exam (id, created_at, updated_at) VALUES ($1, DEFAULT, DEFAULT) RETURNING id"#,
+        r#"INSERT INTO exams (id) VALUES ($1) RETURNING id"#,
         req.exam_id.base.id,
     )
     .fetch_one(&mut *tx)
@@ -33,11 +33,11 @@ async fn insert_exam_id(tx: &mut PgConnection, req: &request::ExamRequest) -> Re
 /// let mut tx = pool.begin().await?;
 /// let detail_id = insert_details(&mut tx, &exam_request).await?;
 /// ```
-async fn insert_details(tx: &mut PgConnection, req: &request::ExamRequest) -> Result<i32> {
+async fn insert_details(tx: &mut PgConnection, req: &exam::ExamRequest) -> Result<i32> {
     let result = sqlx::query!(
         r#"
-        INSERT INTO details (id, exam_id, title, description, duration, passing_score, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, DEFAULT, DEFAULT)
+        INSERT INTO exam_descriptions (id, exam_id, title, description, duration, passing_score)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id
         "#,
         req.description.base.id,
@@ -68,7 +68,7 @@ async fn insert_sections(
 ) -> Result<()> {
     sqlx::query!(
         r#"
-        INSERT INTO sections (id, details_id, title)
+        INSERT INTO sections (id, exam_description_id, title)
         SELECT * FROM UNNEST($1::int[], $2::int[], $3::text[])
         ON CONFLICT (id) DO NOTHING
         "#,
@@ -159,7 +159,7 @@ async fn insert_options(
 ///
 /// # Errors
 /// Returns an error if any part of the insert process fails.
-pub async fn insert_exam(pool: &sqlx::PgPool, exam: &request::ExamRequest) -> Result<()> {
+pub async fn insert_exam(pool: &sqlx::PgPool, exam: &exam::ExamRequest) -> Result<()> {
     let mut tx = pool
         .begin()
         .await

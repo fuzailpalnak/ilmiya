@@ -27,7 +27,7 @@ pub async fn delete_exam(pool: &sqlx::PgPool, exam_id: i32) -> Result<()> {
 
     sqlx::query!(
         r#"
-        DELETE FROM exam
+        DELETE FROM exams
         WHERE id = $1
         "#,
         exam_id
@@ -72,7 +72,7 @@ pub async fn delete_exam(pool: &sqlx::PgPool, exam_id: i32) -> Result<()> {
 /// ```
 pub async fn delete_related_entities(
     pool: &sqlx::PgPool,
-    deletion_data: &model::request::DeleteIdsRequest,
+    deletion_data: &model::delete::DeleteIdsRequest,
 ) -> Result<()> {
     let mut tx = pool.begin().await.context("Failed to begin transaction")?;
 

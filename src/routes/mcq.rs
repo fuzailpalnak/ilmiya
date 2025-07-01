@@ -1,4 +1,4 @@
-use crate::{services::llm::send_prompt_to_llm, model::{self, request::PromptLanguage}};
+use crate::{services::llm::send_prompt_to_llm, model::{self, llm::PromptLanguage}};
 use actix_web::{web, HttpResponse};
 use log::error;
 use crate::utils;
@@ -33,7 +33,7 @@ pub fn build_quranic_verse_mcq_prompt(question: &String, correct_answer: &String
 
 pub async fn generate_mcq_options_from_context(
     app_state: web::Data<model::state::AppState>,
-    req_body: web::Json<model::request::ContextFillInThBlankTextGenerationRequest>,
+    req_body: web::Json<model::llm::ContextFillInThBlankTextGenerationRequest>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let language = utils::parse::map_to_prompt_language(&req_body.language);
 
@@ -57,7 +57,7 @@ pub async fn generate_mcq_options_from_context(
 
 pub async fn generate_mcq_options_for_quranic_verses(
     app_state: web::Data<model::state::AppState>,
-    req_body: web::Json<model::request::QuranicVerseFillInThBlankTextGenerationRequest>,
+    req_body: web::Json<model::llm::QuranicVerseFillInThBlankTextGenerationRequest>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let prompt = build_quranic_verse_mcq_prompt(&req_body.question, &req_body.correct_answer, PromptLanguage::Arabic)?;
 

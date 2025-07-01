@@ -41,7 +41,7 @@ pub struct QuestionsModel {
 #[derive(Serialize, Deserialize, Debug, sqlx::FromRow)]
 pub struct SectionsModel {
     pub id: i32,
-    pub details_id: i32,
+    pub exam_description_id: i32,
     pub title: String,
 }
 
@@ -49,7 +49,7 @@ pub struct SectionsModel {
 pub struct SectionRow {
     pub section_id: i32,
     pub section_title: String,
-    pub section_details_id: i32,
+    pub section_exam_description_id: i32,
     pub question_id: i32,
     pub question_text: String,
     pub question_description: Option<String>,

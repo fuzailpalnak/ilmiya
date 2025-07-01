@@ -1,4 +1,4 @@
-use crate::model::response::ExamResponse;
+use crate::model::exam::{ExamResponse, ExamDescription};
 
 use crate::database::schema;
 use anyhow::{Context, Result};
@@ -22,7 +22,7 @@ async fn fetch_exam_id(pool: &sqlx::PgPool, exam_id: i32) -> Result<schema::Exam
         schema::ExamModel,
         r#"
         SELECT id
-        FROM exam
+        FROM exams
         WHERE id = $1
         "#,
         exam_id
@@ -58,7 +58,7 @@ async fn fetch_exam_description(
             description,
             duration,
             passing_score
-        FROM details
+        FROM exam_descriptions
         WHERE exam_id = $1
         "#,
         exam_id
@@ -93,7 +93,7 @@ async fn fetch_sections_and_questions(
         SELECT
             s.id AS section_id,
             s.title AS section_title,
-            s.details_id AS section_details_id,
+            s.exam_description_id AS section_exam_description_id,
             q.id AS question_id,
             q.text AS question_text,
             q.description AS question_description,
@@ -101,9 +101,9 @@ async fn fetch_sections_and_questions(
             o.id AS option_id,
             o.text AS option_text,
             o.is_correct AS option_is_correct
-        FROM exam e
-        JOIN details d ON e.id = d.exam_id
-        JOIN sections s ON d.id = s.details_id
+        FROM exams e
+        JOIN exam_descriptions d ON e.id = d.exam_id
+        JOIN sections s ON d.id = s.exam_description_id
         LEFT JOIN questions q ON s.id = q.section_id
         LEFT JOIN options o ON q.id = o.question_id
         WHERE e.id = $1

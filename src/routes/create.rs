@@ -4,7 +4,7 @@ use anyhow::Result;
 
 pub async fn create_exam(
     app_state: web::Data<model::state::AppState>,
-    req_body: web::Json<model::request::ExamRequest>,
+    req_body: web::Json<model::exam::ExamRequest>,
 ) -> Result<HttpResponse, actix_web::Error> {
     database::queries::insert::insert_exam(&app_state.db_client.pool, &req_body)
         .await

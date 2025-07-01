@@ -1,7 +1,10 @@
 use crate::database::schema;
 use crate::model;
-use crate::model::request::PromptLanguage;
-use crate::model::response::{GuessFillInTheBlankResponse, OptionResponseModel, QuestionResponse, SectionResponse};
+use crate::model::llm::PromptLanguage;
+use crate::model::llm::{GuessFillInTheBlankResponse};
+use crate::model::option::OptionResponseModel;
+use crate::model::question::QuestionResponse;
+use crate::model::section::SectionResponse;
 use anyhow::{bail, Result};
 use std::collections::HashMap;
 
@@ -18,7 +21,7 @@ pub fn map_to_section_response(
 
         let section_model = schema::SectionsModel {
             id: row.section_id,
-            details_id: row.section_details_id,
+            exam_description_id: row.section_exam_description_id,
             title: row.section_title.clone(),
         };
 
@@ -80,10 +83,10 @@ pub fn map_to_section_response(
     Ok(sections_map)
 }
 
-pub fn map_to_prompt_language(language: &model::request::Language) -> PromptLanguage {
+pub fn map_to_prompt_language(language: &model::llm::Language) -> PromptLanguage {
     match language {
-        model::request::Language::Arabic => PromptLanguage::Arabic,
-        model::request::Language::Urdu => PromptLanguage::Urdu,
+        model::llm::Language::Arabic => PromptLanguage::Arabic,
+        model::llm::Language::Urdu => PromptLanguage::Urdu,
     }
 }
 
