@@ -3,6 +3,7 @@ pub mod delete;
 pub mod edit;
 pub mod fetch;
 pub mod mcq;
+pub mod quran;
 use actix_web::{web, Scope};
 
 pub fn exam_routes() -> Scope {
@@ -19,9 +20,14 @@ pub fn mcq_routes() -> Scope {
         .service(web::resource("/options/context").route(web::post().to(mcq::generate_mcq_options_from_context)))
 }
 
+pub fn quran_routes() -> Scope {
+    web::scope("/quran")
+        .service(web::resource("/verse").route(web::post().to(quran::get_verse)))
+}
 
 pub fn config_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(exam_routes());
     cfg.service(mcq_routes());
+    cfg.service(quran_routes());
 }
 
