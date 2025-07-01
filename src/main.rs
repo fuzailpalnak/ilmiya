@@ -17,6 +17,7 @@ async fn main() -> Result<()> {
     env_logger::init();    
 
     let db_client = conn::DbClient::new().await?;
+    db_client.run_migrations().await?;
     info!("Database client initialized.");
 
     let text_generation_api = conn::UrlBuilder::new()?;

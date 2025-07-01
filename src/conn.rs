@@ -1,7 +1,7 @@
 use crate::utils;
 use anyhow::{Context, Result};
 use log::info;
-use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use sqlx::{postgres::PgPoolOptions, PgPool};
 
 /// A struct representing the database client connection.
 ///
@@ -19,7 +19,7 @@ use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 /// ```
 #[derive(Clone)]
 pub struct DbClient {
-    pub pool: Pool<Postgres>,
+    pub pool: PgPool,
 }
 
 impl DbClient {
@@ -52,6 +52,19 @@ impl DbClient {
 
         info!("Successfully Connected to DB"); // Log the success message
         Ok(DbClient { pool }) // Return the DbClient with the connection
+    }
+
+    /// Runs database migrations using SQLx.
+    ///
+    /// This function applies all pending migrations from the `migrations` directory.
+    /// It returns an error if migrations fail.
+    pub async fn run_migrations(&self) -> Result<()> {
+        sqlx::migrate!("./migrations")
+            .run(&self.pool)
+            .await
+            .context("Failed to run database migrations")?;
+        info!("Database migrations applied successfully");
+        Ok(())
     }
 }
 
