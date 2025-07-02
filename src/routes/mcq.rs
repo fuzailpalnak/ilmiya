@@ -32,14 +32,13 @@ pub fn build_quranic_verse_mcq_prompt(question: &String, correct_answer: &String
 }
 
 pub async fn generate_mcq_options_from_context(
-    app_state: web::Data<model::state::AppState>,
     req_body: web::Json<model::llm::ContextFillInThBlankTextGenerationRequest>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let language = utils::parse::map_to_prompt_language(&req_body.language);
 
     let prompt = build_contextual_mcq_prompt(&req_body.question, &req_body.correct_answer, language)?;
 
-    let raw_output = send_prompt_to_llm(&app_state.text_generation_api.get_url(), prompt, 1)
+    let raw_output = send_prompt_to_llm(prompt, 1)
         .await
         .map_err(|e| {
             error!("LLM API failure: {:?}", e);
@@ -56,12 +55,11 @@ pub async fn generate_mcq_options_from_context(
 }
 
 pub async fn generate_mcq_options_for_quranic_verses(
-    app_state: web::Data<model::state::AppState>,
     req_body: web::Json<model::llm::QuranicVerseFillInThBlankTextGenerationRequest>,
 ) -> Result<HttpResponse, actix_web::Error> {
     let prompt = build_quranic_verse_mcq_prompt(&req_body.question, &req_body.correct_answer, PromptLanguage::Arabic)?;
 
-    let raw_output = send_prompt_to_llm(&app_state.text_generation_api.get_url(), prompt, 1)
+    let raw_output = send_prompt_to_llm(prompt, 1)
         .await
         .map_err(|e| {
             error!("LLM API failure: {:?}", e);

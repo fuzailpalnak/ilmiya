@@ -68,34 +68,3 @@ impl DbClient {
     }
 }
 
-
-#[derive(Clone)]
-pub struct UrlBuilder {
-    base_url: String,
-    model_name: String,
-    api_key: String,
-}
-
-impl UrlBuilder {
-    pub fn new() -> Result<Self> {
-        let base_url = utils::env::load_env_var("TEXT_GENERATION_URL")
-            .context("Failed to load TEXT_GENERATION_URL environment variable")?;
-
-        let model_name = utils::env::load_env_var("TEXT_GENERATION_MODEL")
-            .context("Failed to load TEXT_GENERATION_MODEL environment variable")?;
-
-        let api_key = utils::env::load_env_var("TEXT_GENERATION_API_KEY")
-            .context("Failed to load TEXT_GENERATION_API_KEY environment variable")?;
-
-        Ok(Self {
-            base_url,
-            model_name,
-            api_key,
-        })
-    }
-
-    pub fn get_url(&self) -> String {
-        format!("{}/{}:generateContent?key={}", self.base_url, self.model_name, self.api_key)
-    }
-
-}

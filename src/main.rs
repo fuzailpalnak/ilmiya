@@ -20,9 +20,7 @@ async fn main() -> Result<()> {
     db_client.run_migrations().await?;
     info!("Database client initialized.");
 
-    let text_generation_api = conn::UrlBuilder::new()?;
-
-    let app_state = web::Data::new(model::state::AppState { db_client , text_generation_api});
+    let app_state = web::Data::new(model::state::AppState { db_client });
 
     HttpServer::new(move || {
         App::new()

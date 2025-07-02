@@ -1,11 +1,10 @@
-use crate::model::quran::QuranApiResponse;
+use crate::{model::quran::QuranApiResponse, utils};
 use once_cell::sync::Lazy;
 use reqwest::get;
-use std::env;
 use anyhow::{Result, Context};
 
 static BASE_URL: Lazy<String> = Lazy::new(|| {
-    env::var("QURAN_API_BASE_URL").expect("QURAN_API_BASE_URL must be set in .env")
+    utils::env::load_env_var("QURAN_API_BASE_URL").expect("QURAN_API_BASE_URL must be set in .env")
 });
 
 pub async fn fetch_verse(surah: u32, ayah: u32) -> Result<QuranApiResponse> {
