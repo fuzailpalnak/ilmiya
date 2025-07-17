@@ -1,7 +1,57 @@
 use crate::utils;
 use anyhow::{Context, Result};
+use deadpool_redis::{Config, Pool, Runtime};
 use log::info;
 use sqlx::{postgres::PgPoolOptions, PgPool};
+
+/// A struct representing the Redis client connection.
+///
+/// This struct wraps a connection pool to Redis and allows easy access
+/// to a Redis connection.
+///
+/// # Fields
+///
+/// * `pool` - The Redis connection pool.
+///
+#[derive(Clone)]
+pub struct RedisClient {
+    pub pool: Pool,
+}
+
+impl RedisClient {
+    /// Creates a new instance of `RedisClient` by connecting to the Redis server.
+    ///
+    /// Loads the Redis URL from an environment variable and initializes the connection pool.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result<Self>`. If the connection is successful, it returns `Ok(RedisClient)`.
+    /// Otherwise, it returns an error.
+    pub async fn new() -> Result<Self> {
+        let redis_url = utils::env::load_env_var("REDIS_URL")
+            .context("Failed to load REDIS_URL environment variable")?;
+
+        let cfg = Config::from_url(redis_url);
+        let pool = cfg
+            .create_pool(Some(Runtime::Tokio1))
+            .context("Failed to create Redis connection pool")?;
+
+        info!("Successfully connected to Redis");
+        Ok(Self { pool })
+    }
+
+    /// Gets a Redis connection from the pool.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result<Connection>`, which is a pooled Redis connection ready to use.
+    pub async fn get_connection(&self) -> Result<deadpool_redis::Connection> {
+        self.pool
+            .get()
+            .await
+            .context("Failed to get Redis connection from the pool")
+    }
+}
 
 /// A struct representing the database client connection.
 ///
@@ -67,4 +117,3 @@ impl DbClient {
         Ok(())
     }
 }
-

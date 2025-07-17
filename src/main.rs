@@ -20,7 +20,9 @@ async fn main() -> Result<()> {
     db_client.run_migrations().await?;
     info!("Database client initialized.");
 
-    let app_state = web::Data::new(model::state::AppState { db_client });
+    let redis_client = conn::RedisClient::new().await?;
+
+    let app_state = web::Data::new(model::state::AppState { db_client, redis_client });
 
     HttpServer::new(move || {
         App::new()

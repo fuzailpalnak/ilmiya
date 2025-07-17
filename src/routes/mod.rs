@@ -22,7 +22,7 @@ pub fn mcq_routes() -> Scope {
 
 pub fn quran_routes() -> Scope {
     web::scope("/quran")
-        .service(web::resource("/verse").route(web::post().to(quran::get_verse)))
+        .service(web::resource("/verse").route(web::post().to(quran::get_quran_verse_indo_pak_script)))
 }
 
 pub fn config_routes(cfg: &mut web::ServiceConfig) {
