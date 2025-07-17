@@ -16,13 +16,35 @@ pub fn exam_routes() -> Scope {
 
 pub fn mcq_routes() -> Scope {
     web::scope("/mcq")
-        .service(web::resource("/options/similar").route(web::post().to(mcq::generate_mcq_options_for_quranic_verses)))
-        .service(web::resource("/options/context").route(web::post().to(mcq::generate_mcq_options_from_context)))
+        .service(web::resource("/quran/collection").route(web::post().to(mcq::generate_collection)))
+        .service(web::resource("/quran/diacritic").route(web::post().to(mcq::generate_diacritic)))
+        .service(web::resource("/quran/phonetic").route(web::post().to(mcq::generate_phonetic)))
+        .service(
+            web::resource("/quran/morphological")
+                .route(web::post().to(mcq::generate_morphological)),
+        )
+        .service(
+            web::resource("/quran/grammatical").route(web::post().to(mcq::generate_grammatical)),
+        )
+        .service(
+            web::resource("/quran/alternate_verse")
+                .route(web::post().to(mcq::generate_alternate_verse)),
+        )
+        .service(web::resource("/quran/thematic").route(web::post().to(mcq::generate_thematic)))
+        .service(
+            web::resource("/quran/collocational")
+                .route(web::post().to(mcq::generate_collocational)),
+        )
+        .service(
+            web::resource("/options/context")
+                .route(web::post().to(mcq::generate_mcq_options_from_context)),
+        )
 }
 
 pub fn quran_routes() -> Scope {
-    web::scope("/quran")
-        .service(web::resource("/verse").route(web::post().to(quran::get_quran_verse_indo_pak_script)))
+    web::scope("/quran").service(
+        web::resource("/verse").route(web::post().to(quran::get_quran_verse_indo_pak_script)),
+    )
 }
 
 pub fn config_routes(cfg: &mut web::ServiceConfig) {
@@ -30,4 +52,3 @@ pub fn config_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(mcq_routes());
     cfg.service(quran_routes());
 }
-

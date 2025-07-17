@@ -1,13 +1,11 @@
 use crate::database::schema;
 use crate::model;
 use crate::model::llm::PromptLanguage;
-use crate::model::llm::{GuessFillInTheBlankResponse};
 use crate::model::option::OptionResponseModel;
 use crate::model::question::QuestionResponse;
 use crate::model::section::SectionResponse;
-use anyhow::{bail, Result};
+use anyhow::Result;
 use std::collections::HashMap;
-
 
 /// Maps the raw rows from the database query to structured `SectionResponse` objects.
 /// Returns a Result with either the mapped data or an error.
@@ -90,24 +88,21 @@ pub fn map_to_prompt_language(language: &model::llm::Language) -> PromptLanguage
     }
 }
 
-pub fn parse_similar_fill_in_the_blanks_options(json_text: &str) -> Result<GuessFillInTheBlankResponse> {
+pub fn clean_llm_json_output(json_text: &str) -> Result<String, anyhow::Error> {
     let mut clean_text = json_text.trim();
 
+    // Remove the code block markers and possible 'json' after the first ```
     if clean_text.starts_with("```") {
-        clean_text = clean_text
-            .trim_start_matches("```json")
-            .trim_start_matches("```")
-            .trim_end_matches("```")
-            .trim();
-    }
-    let parsed: GuessFillInTheBlankResponse = serde_json::from_str(clean_text)?;
+        clean_text = clean_text.trim_start_matches("```").trim_start();
 
-    if parsed.responses.len() < 4 {
-        bail!(
-            "Couldn't generate enough options. Expected at least 4, got {}",
-            parsed.responses.len()
-        );
+        if clean_text.starts_with("json") {
+            clean_text = clean_text.trim_start_matches("json").trim_start();
+        }
+
+        if clean_text.ends_with("```") {
+            clean_text = clean_text.trim_end_matches("```").trim();
+        }
     }
 
-    Ok(parsed)
+    Ok(clean_text.to_string())
 }
