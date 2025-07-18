@@ -30,7 +30,7 @@ async fn main() -> Result<()> {
             .wrap(Logger::default())
             .wrap(
                 Cors::default()
-                    .allowed_origin("http://localhost:8080")
+                    .allowed_origin("http://localhost:8081")
                     .allowed_methods(vec!["GET", "POST", "OPTIONS"])
                     .allowed_headers(vec![header::CONTENT_TYPE])
                     .supports_credentials(),

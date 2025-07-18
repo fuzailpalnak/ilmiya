@@ -30,10 +30,8 @@ pub async fn get_quran_verse_indo_pak_script(
                 actix_web::error::ErrorInternalServerError("Failed to parse verse data")
             })?;
 
-            let joined = words.join(", ");
-
             let response = QuranApiRedisResponse {
-                text: vec![joined],
+                text: words,
                 mode: "indopak".to_string(), // Change this if needed
             };
 
