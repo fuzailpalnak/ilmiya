@@ -1,4 +1,4 @@
-use crate::model::exam::{ExamResponse, ExamDescription};
+use crate::model::exam::ExamResponse;
 
 use crate::database::schema;
 use anyhow::{Context, Result};
