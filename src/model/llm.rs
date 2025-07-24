@@ -1,5 +1,4 @@
-
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -70,7 +69,6 @@ impl LLMRequest {
     }
 }
 
-
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct LLMResponse {
@@ -95,5 +93,72 @@ pub struct LLMPartResponse {
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct GuessFillInTheBlankResponse {
-    pub responses: Vec<String>,
+    pub correct_answer: Vec<String>,
+    pub distractors: Vec<String>,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct GuessFillInTheBlankQuranDistractorCollectionResponse {
+    pub correct_answer: Vec<String>,
+    pub collocational_distractors: Vec<String>,
+    pub thematic_distractors: Vec<String>,
+    pub alternative_verse_distractors: Vec<String>,
+    pub grammatical_distractors: Vec<String>,
+    pub morphological_distractors: Vec<String>,
+    pub phonetic_orthographic_distractors: Vec<String>,
+    pub diacritic_distractors: Vec<String>,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct CollocationalDistractorResponse {
+    pub correct_answer: Vec<String>,
+    pub collocational_distractors: Vec<String>,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct ThematicDistractorResponse {
+    pub correct_answer: Vec<String>,
+    pub thematic_distractors: Vec<String>,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct AlternateVerseDistractorResponse {
+    pub correct_answer: Vec<String>,
+    pub alternative_verse_distractors: Vec<String>,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct GrammaticalDistractorResponse {
+    pub correct_answer: Vec<String>,
+    pub grammatical_distractors: Vec<String>,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct MorphologicalDistractorResponse {
+    pub correct_answer: Vec<String>,
+    pub morphological_distractors: Vec<String>,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct PhoneticOrthographicDistractorResponse {
+    pub correct_answer: Vec<String>,
+    pub phonetic_orthographic_distractors: Vec<String>,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct DiacriticDistractorResponse {
+    pub correct_answer: Vec<String>,
+    pub diacritic_distractors: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum DistractorType {
+    Collection,
+    Diacritic,
+    Phonetic,
+    Morphological,
+    Grammatical,
+    AlternateVerse,
+    Thematic,
+    Collocational,
 }
